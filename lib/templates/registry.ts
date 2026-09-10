@@ -1,4 +1,4 @@
-import type { DocumentType } from '@/app/page'
+import type { DocumentType } from '@/lib/document/types'
 
 export type TemplateId = 'quiet-line' | 'ledger' | 'studio' | 'receipt-grid' | 'mono-mark' | 'soft-form'
 

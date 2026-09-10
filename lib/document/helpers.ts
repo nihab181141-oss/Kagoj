@@ -1,4 +1,4 @@
-import type { DocumentState } from '@/app/page'
+import type { DocumentState } from '@/lib/document/types'
 
 export const formatBDT = (value: number) => `৳ ${Math.max(0, value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
 export const formatDocumentDate = (value: string) => value ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T00:00:00`)).toUpperCase() : 'DATE NOT SET'
