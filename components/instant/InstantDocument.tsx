@@ -1,17 +1,21 @@
 'use client'
 
 import type { InstantDocument } from '@/lib/instant/types'
-import { formatBDT, instantLabel } from '@/lib/instant/types'
+import { currencySymbol, emptyInstantField, formatInstantMoney, instantLabel, instantSubtotal, instantTotal } from '@/lib/instant/types'
 
-export function InstantDocumentPreview({ document }: { document: InstantDocument }) {
-  const total = document.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
-  return <article className="instant-document-preview" aria-label={`${instantLabel(document.mode)} preview`}>
-    <div className="instant-doc-top"><div><span className="instant-logo">K</span><strong>{document.businessName || 'Your business'}</strong></div><span className="instant-doc-label">{instantLabel(document.mode)}</span></div>
-    <div className="instant-doc-meta"><div><small>TO</small><b>{document.customerName || 'Customer name'}</b></div><div><small>DATE</small><b>{document.date || 'Today'}</b></div><div><small>NO.</small><b>{document.documentNumber}</b></div></div>
-    <div className="instant-doc-items">{document.items.map(item => <div key={item.id}><span>{item.description || 'Item'}</span><span>{item.quantity} × {formatBDT(item.unitPrice)}</span><strong>{formatBDT(item.quantity * item.unitPrice)}</strong></div>)}</div>
-    <div className="instant-doc-total"><span>{document.mode === 'payment' ? 'AMOUNT RECEIVED' : 'TOTAL DUE'}</span><strong>{formatBDT(document.mode === 'payment' ? document.amountPaid || total : total)}</strong></div>
-    {(document.mode !== 'invoice' || document.paymentMethod) && <div className="instant-doc-payment"><span>Payment method</span><b>{document.paymentMethod}{document.reference ? ` · ${document.reference}` : ''}</b></div>}
-    {document.notes && <p className="instant-doc-notes">{document.notes}</p>}
-    <div className="instant-doc-footer">Generated with Kagoj · kagoj.app</div>
+export function InstantDocumentPreview({ document, onChange }: { document: InstantDocument; onChange?: (patch: Partial<InstantDocument>) => void }) {
+  const editable = Boolean(onChange)
+  const total = instantTotal(document)
+  const field = (key: keyof InstantDocument, fallback: string, className = '') => editable ? <input className={`instant-inline ${className}`} value={String(document[key] ?? '')} placeholder={fallback} onChange={event => onChange?.({ [key]: event.target.value })} /> : <span className={className}>{emptyInstantField(String(document[key] ?? ''), fallback)}</span>
+  return <article className={`instant-document-preview instant-paper-${document.mode}`} aria-label={`${instantLabel(document.mode)} preview`}>
+    <div className="instant-doc-top"><div className="instant-seller"><div className="instant-logo-wrap">{document.logoUrl ? <img src={document.logoUrl} alt="Business logo" /> : <span className="instant-logo">K</span>}</div><div>{field('businessName', 'Your business', 'seller-name')}<small>{field('businessAddress', 'Dhaka, Bangladesh')}</small>{(document.businessPhone || document.businessEmail || editable) && <small>{document.businessPhone || document.businessEmail || 'Contact details'}</small>}</div></div><span className="instant-doc-label">{instantLabel(document.mode)}</span></div>
+    <div className="instant-doc-meta"><div><small>{document.mode === 'payment' ? 'FROM' : 'BILL TO'}</small><b>{field('customerName', 'Customer name')}</b><span>{field('customerAddress', 'Customer address')}</span></div><div><small>DATE</small><b>{field('date', 'Today')}</b></div><div><small>NO.</small><b>{field('documentNumber', 'DRAFT')}</b></div></div>
+    {document.shipToName || document.shipToAddress || editable ? <div className="instant-doc-ship"><small>SHIP TO</small><b>{field('shipToName', 'Optional recipient')}</b><span>{field('shipToAddress', 'Optional delivery address')}</span></div> : null}
+    <div className="instant-doc-items"><div className="instant-doc-item-head"><span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>AMOUNT</span></div>{document.items.map((item, index) => <div key={item.id}><span>{editable ? <input className="instant-inline" value={item.description} placeholder="Item or service" onChange={e => onChange?.({ items: document.items.map((current, i) => i === index ? { ...current, description: e.target.value } : current) })} /> : emptyInstantField(item.description, `Item ${index + 1}`)}</span><span>{item.quantity}</span><span>{formatInstantMoney(item.unitPrice, document.currency)}</span><strong>{formatInstantMoney(item.quantity * item.unitPrice, document.currency)}</strong></div>)}</div>
+    <div className="instant-doc-totals"><div><span>Subtotal</span><b>{formatInstantMoney(instantSubtotal(document), document.currency)}</b></div>{document.discount > 0 && <div><span>Discount</span><b>-{formatInstantMoney(document.discount, document.currency)}</b></div>}{document.deliveryCharge > 0 && <div><span>Delivery</span><b>{formatInstantMoney(document.deliveryCharge, document.currency)}</b></div>}{document.tax > 0 && <div><span>Tax</span><b>{formatInstantMoney(document.tax, document.currency)}</b></div>}<div className="instant-doc-total"><span>{document.mode === 'payment' ? 'AMOUNT RECEIVED' : 'TOTAL DUE'}</span><strong>{formatInstantMoney(document.mode === 'payment' ? document.amountPaid || total : total, document.currency)}</strong></div></div>
+    <div className="instant-doc-payment"><span>Payment method</span><b>{document.paymentMethod}{document.reference ? ` · ${document.reference}` : ''}</b></div>
+    {(document.notes || editable) && <p className="instant-doc-notes">{editable ? <textarea className="instant-inline" value={document.notes} placeholder="Add a note for your customer" onChange={e => onChange?.({ notes: e.target.value })} /> : document.notes}</p>}
+    {(document.terms || editable) && <p className="instant-doc-terms"><b>Terms</b> {editable ? <input className="instant-inline" value={document.terms} placeholder="Payment due on receipt" onChange={e => onChange?.({ terms: e.target.value })} /> : document.terms}</p>}
+    <div className="instant-doc-footer">Generated with Kagoj · kagoj.app <span>{currencySymbol(document.currency)}</span></div>
   </article>
 }
