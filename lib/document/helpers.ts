@@ -1,4 +1,12 @@
-import type { DocumentState } from '@/lib/document/types'
+import type { DocumentState, PaymentStatus } from '@/lib/document/types'
+
+export const calculatePaymentStatus = (total: number, amountPaid: number): PaymentStatus => {
+  if (total <= 0) return 'PENDING'
+  if (amountPaid <= 0) return 'DUE'
+  if (amountPaid >= total) return 'PAID'
+  return 'PARTIALLY_PAID'
+}
+export const paymentStatusLabel = (status: PaymentStatus) => status === 'PARTIALLY_PAID' ? 'PARTIALLY PAID' : status
 
 export const formatBDT = (value: number) => `৳ ${Math.max(0, value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
 export const formatDocumentDate = (value: string) => value ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T00:00:00`)).toUpperCase() : 'DATE NOT SET'

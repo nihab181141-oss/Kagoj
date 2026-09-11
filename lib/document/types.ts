@@ -1,4 +1,7 @@
 export type DocumentType = 'Invoice' | 'Receipt' | 'Payment Confirmation'
+export type CurrencyCode = 'BDT' | 'USD' | 'EUR' | 'GBP'
+export type PaymentMethod = 'Cash' | 'bKash' | 'Nagad' | 'Bank Transfer' | 'Card' | 'COD' | 'Other'
+export type PaymentStatus = 'PAID' | 'DUE' | 'PARTIALLY_PAID' | 'PENDING'
 
 export type DocumentItem = {
   id: string
@@ -26,6 +29,10 @@ export type DocumentState = {
   deliveryCharge: number
   tax: number
   amountPaid: number
+  currency: CurrencyCode
+  paymentMethod: PaymentMethod
+  paymentReference: string
+  showPaymentStamp: boolean
 }
 
 export type DocumentCustomization = {

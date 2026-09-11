@@ -30,6 +30,7 @@ function normalize(value: unknown): SavedDocument[] {
   }).map((item) => ({
     ...(item as SavedDocument),
     schemaVersion: 1,
+    document: { currency: 'BDT', paymentMethod: 'Cash', paymentReference: '', showPaymentStamp: true, ...item.document },
     status: item.status === 'completed' ? 'completed' : 'draft',
     title: item.title || `${item.document.documentType} ${item.document.documentNumber}`,
     createdAt: item.createdAt || new Date().toISOString(),

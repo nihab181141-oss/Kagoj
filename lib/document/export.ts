@@ -1,5 +1,5 @@
 import type { DocumentCustomization, DocumentState } from '@/lib/document/types'
-import { calculateDocument, formatBDT, formatDocumentDate } from '@/lib/document/helpers'
+import { calculateDocument, calculatePaymentStatus, formatBDT, formatDocumentDate, paymentStatusLabel } from '@/lib/document/helpers'
 import { getTemplate, type TemplateId } from '@/lib/templates/registry'
 import { getDefaultCustomization } from '@/lib/templates/defaults'
 
@@ -49,6 +49,7 @@ export async function createPdfBlob(document: DocumentState, templateId: Templat
   if (document.deliveryCharge) { pdf.text('Delivery charge', 135, y); pdf.text(formatBDT(document.deliveryCharge), right, y, { align: 'right' }); y += 7 }
   if (document.tax) { pdf.text('Tax', 135, y); pdf.text(formatBDT(document.tax), right, y, { align: 'right' }); y += 7 }
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text(totals.amountDue > 0 ? 'Amount due' : 'Total', 135, y + 3); pdf.setTextColor(primary.r, primary.g, primary.b); pdf.text(formatBDT(totals.amountDue > 0 ? totals.amountDue : totals.total), right, y + 3, { align: 'right' }); y += 18
+  if (document.showPaymentStamp) { const status = calculatePaymentStatus(totals.total, document.amountPaid); const stampColor = status === 'PAID' ? [38, 125, 91] : status === 'DUE' ? [190, 65, 58] : status === 'PARTIALLY_PAID' ? [184, 121, 28] : [105, 110, 108]; pdf.setDrawColor(stampColor[0], stampColor[1], stampColor[2]); pdf.setTextColor(stampColor[0], stampColor[1], stampColor[2]); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.rect(margin, y - 6, 48, 10); pdf.text(paymentStatusLabel(status), margin + 24, y, { align: 'center' }); y += 14 }
   if (style.showNotes && document.notes) { pdf.setTextColor(90, 94, 90); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.text(document.notes, margin, y) }
   return pdf.output('blob') as Blob
 }
