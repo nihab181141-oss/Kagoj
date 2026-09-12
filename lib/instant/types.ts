@@ -29,6 +29,8 @@ export type InstantDocument = {
   amountPaid: number
   notes: string
   terms: string
+  paymentTerms: string
+  poNumber: string
   logoUrl: string
 }
 
@@ -39,7 +41,7 @@ export const INSTANT_MODES: { id: InstantMode; label: string; description: strin
 ]
 
 export const instantDefaults = (mode: InstantMode): InstantDocument => ({
-  mode, businessName: '', businessAddress: '', businessPhone: '', businessEmail: '', customerName: '', customerAddress: '', customerPhone: '', customerEmail: '', shipToName: '', shipToAddress: '', documentNumber: '', date: new Date().toISOString().slice(0, 10), dueDate: '', currency: 'BDT', paymentMethod: 'bKash', reference: '', items: [{ id: `instant-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }], discount: 0, deliveryCharge: 0, tax: 0, amountPaid: 0, notes: '', terms: '', logoUrl: '',
+  mode, businessName: '', businessAddress: '', businessPhone: '', businessEmail: '', customerName: '', customerAddress: '', customerPhone: '', customerEmail: '', shipToName: '', shipToAddress: '', documentNumber: '', date: new Date().toISOString().slice(0, 10), dueDate: '', currency: 'BDT', paymentMethod: 'bKash', reference: '', items: [{ id: `instant-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }], discount: 0, deliveryCharge: 0, tax: 0, amountPaid: 0, notes: '', terms: '', paymentTerms: '', poNumber: '', logoUrl: '',
 })
 
 export const instantTotal = (document: InstantDocument) => {

@@ -6,6 +6,7 @@ import type { DocumentCustomization } from '@/lib/document/types'
 import type { TemplateId } from '@/lib/templates/registry'
 import { downloadDocument, printDocument, shareDocument } from '@/lib/document/export'
 import { InstantDocumentPreview } from '@/components/instant/InstantDocument'
+import { InstantInvoice } from '@/components/instant/InstantInvoice'
 import { INSTANT_MODES, instantDefaults, instantModeFromType, instantToDocument, isInstantReady, type InstantDocument, type InstantMode } from '@/lib/instant/types'
 
 const input = (label: string, value: string | number, onChange: (value: string) => void, placeholder = '') => <label className="instant-field"><span>{label}</span><input value={value} placeholder={placeholder} onChange={event => onChange(event.target.value)} /></label>
@@ -21,6 +22,7 @@ export function InstantEditor({ initialMode, onBack, templateId, customization }
   const action = async (fn: () => Promise<void>) => { setMessage('Preparing…'); try { await fn(); setMessage('Ready') } catch { setMessage('Could not complete that action') } }
   const ready = isInstantReady(document)
   const converted = instantToDocument(document)
+  if (document.mode === 'invoice') return <div className="instant-shell"><header className="instant-header"><button className="icon-button" onClick={onBack} aria-label="Back"><ArrowLeft size={17} /></button><div><div className="eyebrow coral">KAGOJ INSTANT</div><h1>Create an invoice<span>.</span></h1></div><div className="instant-status"><span className="status-dot" /> Local draft</div></header><InstantInvoice document={document} setDocument={setDocument} onSave={() => action(async () => setMessage('Saved locally'))} onSend={() => action(async () => setMessage('Ready to send'))} onDownload={() => action(() => downloadDocument(converted, templateId, { ...customization, showLogo: Boolean(document.logoUrl), logoText: document.businessName }))} onPrint={() => printDocument()} onShare={() => action(() => shareDocument(converted, templateId, customization))} /></div>
   return <div className="instant-shell"><header className="instant-header"><button className="icon-button" onClick={onBack} aria-label="Back"><ArrowLeft size={17} /></button><div><div className="eyebrow coral">KAGOJ INSTANT</div><h1>{document.mode === 'payment' ? 'Confirm a payment' : `Create a ${document.mode}`}<span>.</span></h1></div><div className="instant-status"><span className="status-dot" /> Local draft</div></header>
     <div className="instant-mode-row">{INSTANT_MODES.map(mode => <button key={mode.id} className={document.mode === mode.id ? 'active' : ''} onClick={() => setMode(mode.id)}><b>{mode.label}</b><small>{mode.description}</small></button>)}</div>
     <div className="instant-layout"><section className="instant-form">
