@@ -6,7 +6,7 @@ import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.apiKey || '',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.apiKey_3 || process.env.apiKey || '',
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'kagoj-b8693.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'kagoj-b8693',
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'kagoj-b8693.firebasestorage.app',
