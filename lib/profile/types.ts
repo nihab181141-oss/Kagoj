@@ -1,3 +1,5 @@
+export const PROFILE_KEY = 'kagoj.preview.profile'
+
 export type BusinessType = 'Retail' | 'Service' | 'Freelancer' | 'Online business' | 'Other'
 
 export type UserProfile = {
