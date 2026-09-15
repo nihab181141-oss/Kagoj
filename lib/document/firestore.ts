@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, getDocs, orderBy, query, setDoc } from 'firebase/firestore'
 import { firebaseDb } from '@/lib/firebase/client'
-import type { SavedDocument } from '@/lib/document/storage'
+import { normalizeSavedDocuments, type SavedDocument } from '@/lib/document/storage'
 
 function documentsCollection(uid: string) {
   return collection(firebaseDb, 'users', uid, 'documents')
@@ -13,7 +13,7 @@ function assertUser(uid: string) {
 export async function getCloudDocuments(uid: string): Promise<SavedDocument[]> {
   assertUser(uid)
   const snapshot = await getDocs(query(documentsCollection(uid), orderBy('updatedAt', 'desc')))
-  return snapshot.docs.map((item) => item.data() as SavedDocument)
+  return normalizeSavedDocuments(snapshot.docs.map((item) => item.data()))
 }
 
 export async function saveCloudDocument(uid: string, document: SavedDocument): Promise<SavedDocument> {

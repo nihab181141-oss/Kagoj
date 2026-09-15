@@ -21,7 +21,7 @@ function isBrowser() {
   return typeof window !== 'undefined'
 }
 
-function normalize(value: unknown): SavedDocument[] {
+export function normalizeSavedDocuments(value: unknown): SavedDocument[] {
   if (!Array.isArray(value)) return []
   return value.filter((item): item is SavedDocument => {
     if (!item || typeof item !== 'object') return false
@@ -40,7 +40,7 @@ function normalize(value: unknown): SavedDocument[] {
 
 export function getSavedDocuments(): SavedDocument[] {
   if (!isBrowser()) return []
-  try { return normalize(JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]')) } catch { return [] }
+  try { return normalizeSavedDocuments(JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]')) } catch { return [] }
 }
 
 function writeSavedDocuments(documents: SavedDocument[]) {
