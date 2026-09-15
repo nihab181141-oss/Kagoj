@@ -56,4 +56,3 @@ export type DocumentCustomization = {
 }
 
 export type CalculatedDocument = { lineTotals: number[]; subtotal: number; total: number; amountDue: number }
-EOF

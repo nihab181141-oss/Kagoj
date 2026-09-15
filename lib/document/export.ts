@@ -1,5 +1,5 @@
 import type { DocumentCustomization, DocumentState } from '@/lib/document/types'
-import { calculateDocument, calculatePaymentStatus, formatBDT, formatDocumentDate, paymentStatusLabel } from '@/lib/document/helpers'
+import { calculateDocument, calculatePaymentStatus, formatMoney, formatDocumentDate, paymentStatusLabel } from '@/lib/document/helpers'
 import { getTemplate, type TemplateId } from '@/lib/templates/registry'
 import { getDefaultCustomization } from '@/lib/templates/defaults'
 
@@ -42,13 +42,13 @@ export async function createPdfBlob(document: DocumentState, templateId: Templat
   const columns = [margin, 112, 135, 160, right]
   pdf.setFillColor(primary.r, primary.g, primary.b); pdf.rect(margin, y - 5, right - margin, 8, 'F'); pdf.setTextColor(255, 255, 255); pdf.setFont('helvetica', 'bold'); pdf.text('DESCRIPTION', columns[0] + 2, y); pdf.text('QTY', columns[1], y); pdf.text('RATE', columns[2], y); pdf.text('TOTAL', columns[3], y); y += 10
   pdf.setTextColor(32, 35, 33); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9)
-  document.items.forEach((item, index) => { if (y > 260) { pdf.addPage(); y = 20 } pdf.text(`${style.showItemNumbers ? `${index + 1}. ` : ''}${item.description || `Item ${index + 1}`}`.slice(0, 54), columns[0] + 2, y); pdf.text(String(item.quantity), columns[1], y); pdf.text(formatBDT(item.unitPrice), columns[2], y); pdf.text(formatBDT(totals.lineTotals[index]), columns[3], y); y += 9 })
+  document.items.forEach((item, index) => { if (y > 260) { pdf.addPage(); y = 20 } pdf.text(`${style.showItemNumbers ? `${index + 1}. ` : ''}${item.description || `Item ${index + 1}`}`.slice(0, 54), columns[0] + 2, y); pdf.text(String(item.quantity), columns[1], y); pdf.text(formatMoney(item.unitPrice, document.currency), columns[2], y); pdf.text(formatMoney(totals.lineTotals[index], document.currency), columns[3], y); y += 9 })
   y += 5; line(); y += 12
-  pdf.setFont('helvetica', 'normal'); pdf.text('Subtotal', 135, y); pdf.text(formatBDT(totals.subtotal), right, y, { align: 'right' }); y += 7
-  if (document.discount) { pdf.text('Discount', 135, y); pdf.text(`-${formatBDT(document.discount)}`, right, y, { align: 'right' }); y += 7 }
-  if (document.deliveryCharge) { pdf.text('Delivery charge', 135, y); pdf.text(formatBDT(document.deliveryCharge), right, y, { align: 'right' }); y += 7 }
-  if (document.tax) { pdf.text('Tax', 135, y); pdf.text(formatBDT(document.tax), right, y, { align: 'right' }); y += 7 }
-  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text(totals.amountDue > 0 ? 'Amount due' : 'Total', 135, y + 3); pdf.setTextColor(primary.r, primary.g, primary.b); pdf.text(formatBDT(totals.amountDue > 0 ? totals.amountDue : totals.total), right, y + 3, { align: 'right' }); y += 18
+  pdf.setFont('helvetica', 'normal'); pdf.text('Subtotal', 135, y); pdf.text(formatMoney(totals.subtotal, document.currency), right, y, { align: 'right' }); y += 7
+  if (document.discount) { pdf.text('Discount', 135, y); pdf.text(`-${formatMoney(document.discount, document.currency)}`, right, y, { align: 'right' }); y += 7 }
+  if (document.deliveryCharge) { pdf.text('Delivery charge', 135, y); pdf.text(formatMoney(document.deliveryCharge, document.currency), right, y, { align: 'right' }); y += 7 }
+  if (document.tax) { pdf.text('Tax', 135, y); pdf.text(formatMoney(document.tax, document.currency), right, y, { align: 'right' }); y += 7 }
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text(totals.amountDue > 0 ? 'Amount due' : 'Total', 135, y + 3); pdf.setTextColor(primary.r, primary.g, primary.b); pdf.text(formatMoney(totals.amountDue > 0 ? totals.amountDue : totals.total, document.currency), right, y + 3, { align: 'right' }); y += 18
   if (document.showPaymentStamp) { const status = calculatePaymentStatus(totals.total, document.amountPaid); const stampColor = status === 'PAID' ? [38, 125, 91] : status === 'DUE' ? [190, 65, 58] : status === 'PARTIALLY_PAID' ? [184, 121, 28] : [105, 110, 108]; pdf.setDrawColor(stampColor[0], stampColor[1], stampColor[2]); pdf.setTextColor(stampColor[0], stampColor[1], stampColor[2]); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.rect(margin, y - 6, 48, 10); pdf.text(paymentStatusLabel(status), margin + 24, y, { align: 'center' }); y += 14 }
   if (style.showNotes && document.notes) { pdf.setTextColor(90, 94, 90); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.text(document.notes, margin, y) }
   return pdf.output('blob') as Blob
